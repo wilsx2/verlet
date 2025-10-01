@@ -11,6 +11,9 @@ class Solver
     sf::Vector2f m_world_size;
     sf::Vector2f m_acceleration;
     float m_radius;
+    void apply_constraints();
+    void handle_collisions();
+    void handle_collision(PhysicsObject& a, PhysicsObject& b);
     
     public:
     Solver() = default;

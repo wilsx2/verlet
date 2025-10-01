@@ -8,18 +8,23 @@ Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
 
     // Add objects to test the renderer
     m_objects.emplace_back(sf::Vector2f(50.f, 50.f), sf::Color::White);
-    m_objects.emplace_back(sf::Vector2f(60.f, 70.f), sf::Color::Red);
+    m_objects.emplace_back(sf::Vector2f(60.f, 120.f), sf::Color::Red);
 }
 
 void Solver::update(float dt)
 {
-    // Move objects
+    // Update object motion
     for (auto& obj : m_objects)
     {
         obj.update(dt, m_acceleration);
-    }
+    }   
+    
+    apply_constraints();
+    handle_collisions();
+}
 
-    // Constrain to world
+void Solver::apply_constraints()
+{
     for (auto& obj : m_objects)
     {
 
@@ -43,6 +48,34 @@ void Solver::update(float dt)
         }
         
     }
+}
+
+void Solver::handle_collisions()
+{
+    for (auto& a : m_objects)
+    {
+        for (auto& b : m_objects)
+        {
+            if (&a != &b)
+            {
+                handle_collision(a,b);
+            }
+        }   
+    }   
+}
+
+void Solver::handle_collision(PhysicsObject& a, PhysicsObject& b)
+{
+    auto difference = a.getPosition() - b.getPosition();
+    auto overlap = (m_radius * 2) - difference.length();
+    if (overlap < 0.f)
+    {
+        return;
+    }
+
+    auto nudge = difference.normalized() * (overlap / 2.f);
+    a.setPosition(a.getPosition() + nudge);
+    b.setPosition(b.getPosition() - nudge);
 }
 
 const std::vector<PhysicsObject>& Solver::getObjects() const
