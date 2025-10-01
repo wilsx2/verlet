@@ -15,6 +15,7 @@ class Solver
     public:
     Solver() = default;
     Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius);
+    void update(float dt);
     const std::vector<PhysicsObject>& getObjects() const;
     float getRadius() const;
 };
