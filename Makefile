@@ -1,7 +1,7 @@
 CC=g++
 DEPS=-lsfml-graphics -lsfml-window -lsfml-system
 EXE=verlet.exe
-SRC=src/main.cpp
+SRC=src/main.cpp src/Physics/PhysicsObject.cpp src/Physics/Solver.cpp src/Rendering/Renderer.cpp
 
 all: $(EXE)
 

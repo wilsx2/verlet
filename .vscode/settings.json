@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "memory": "cpp",
+        "optional": "cpp",
+        "type_traits": "cpp"
+    }
+}
