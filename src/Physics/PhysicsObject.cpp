@@ -1,10 +1,13 @@
 #include "PhysicsObject.hpp"
 
 PhysicsObject::PhysicsObject(sf::Vector2f position, sf::Color color)
+    : PhysicsObject(position, {0.f,0.f}, color){}
+
+PhysicsObject::PhysicsObject(sf::Vector2f position, sf::Vector2f velocity, sf::Color color)
 {
     m_color = color;
     m_position = position;
-    m_prev_position = position;
+    m_prev_position = position - velocity;
 }
 
 void PhysicsObject::update(float dt, sf::Vector2f acceleration)

@@ -5,10 +5,6 @@ Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
-
-    // Add objects to test the renderer
-    m_objects.emplace_back(sf::Vector2f(50.f, 50.f), sf::Color::White);
-    m_objects.emplace_back(sf::Vector2f(60.f, 120.f), sf::Color::Red);
 }
 
 void Solver::update(float dt)
@@ -76,6 +72,19 @@ void Solver::handle_collision(PhysicsObject& a, PhysicsObject& b)
     auto nudge = difference.normalized() * (overlap / 2.f);
     a.setPosition(a.getPosition() + nudge);
     b.setPosition(b.getPosition() - nudge);
+}
+
+void Solver::spawn_object(sf::Vector2f position, sf::Vector2f velocity, sf::Color color)
+{
+    for (auto& obj : m_objects)
+    {
+        if ((obj.getPosition() - position).length() < m_radius * 2)
+        {
+            return;
+        }
+    }
+
+    m_objects.emplace_back(position, velocity, color);
 }
 
 const std::vector<PhysicsObject>& Solver::getObjects() const

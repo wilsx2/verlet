@@ -13,6 +13,7 @@ class PhysicsObject
     public:
     PhysicsObject() = default;
     PhysicsObject(sf::Vector2f position, sf::Color color);
+    PhysicsObject(sf::Vector2f position, sf::Vector2f initial_velocity, sf::Color color);
     void update(float dt, sf::Vector2f acceleration);
     void setPosition(sf::Vector2f v);
     const sf::Vector2f& getPosition() const;

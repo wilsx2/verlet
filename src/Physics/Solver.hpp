@@ -19,6 +19,7 @@ class Solver
     Solver() = default;
     Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius);
     void update(float dt);
+    void spawn_object(sf::Vector2f position, sf::Vector2f velocity, sf::Color color);
     const std::vector<PhysicsObject>& getObjects() const;
     float getRadius() const;
 };

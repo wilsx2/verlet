@@ -6,14 +6,20 @@
 
 using Clock = std::chrono::steady_clock;
 
+constexpr float RADIUS = 10.f;
+constexpr float FRAME_TARGET = 60.f;
+
 int main()
 {
     sf::Vector2u world_size {1000, 1000};
-    Solver solver (static_cast<sf::Vector2f>(world_size), {0.f, 30.f}, 30.f);
+    Solver solver (static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
     Renderer renderer {};
 
     sf::RenderWindow window(sf::VideoMode(world_size), "SFML Verlet");
 
+    bool frame_target_lost = false;
+    int frames_under_target = 0;
+    window.setFramerateLimit(FRAME_TARGET + 1.f);
     sf::Clock clock;
     while (window.isOpen())
     {
@@ -25,8 +31,32 @@ int main()
         }
 
         // Processing
+        /// Find delta time
         sf::Time elapsed = clock.restart();
         float dt = elapsed.asSeconds();
+        std::cout << (1.f / dt) << " | " << solver.getObjects().size() << "\n";
+        /// Spawn new objects
+        if (1.f / dt < FRAME_TARGET)
+        {
+            frames_under_target++;
+            if (frames_under_target >= 5)
+            {
+                frame_target_lost = true;
+            }
+        }
+        else
+        {
+            frames_under_target = 0;
+        }
+
+        if (!frame_target_lost)
+        {
+            for (int i = 0; i < solver.getObjects().size() / 100 + 1 && i < 6; ++i)
+            {
+                solver.spawn_object(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(5.f, 0.f), sf::Color::White);
+            }
+        }
+        /// Update objects
         solver.update(dt);
 
 
