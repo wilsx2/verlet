@@ -14,11 +14,11 @@ void Solver::update(float dt)
         obj.update(dt, m_acceleration);
     }   
     
-    apply_constraints();
-    handle_collisions();
+    applyConstraints();
+    handleCollisions();
 }
 
-void Solver::apply_constraints()
+void Solver::applyConstraints()
 {
     for (auto& obj : m_objects)
     {
@@ -45,7 +45,7 @@ void Solver::apply_constraints()
     }
 }
 
-void Solver::handle_collisions()
+void Solver::handleCollisions()
 {
     for (auto& a : m_objects)
     {
@@ -53,13 +53,13 @@ void Solver::handle_collisions()
         {
             if (&a != &b)
             {
-                handle_collision(a,b);
+                handleCollision(a,b);
             }
         }   
     }   
 }
 
-void Solver::handle_collision(PhysicsObject& a, PhysicsObject& b)
+void Solver::handleCollision(PhysicsObject& a, PhysicsObject& b)
 {
     auto difference = a.getPosition() - b.getPosition();
     auto overlap = (m_radius * 2) - difference.length();
@@ -73,7 +73,7 @@ void Solver::handle_collision(PhysicsObject& a, PhysicsObject& b)
     b.setPosition(b.getPosition() - nudge);
 }
 
-void Solver::spawn_object(sf::Vector2f position, sf::Vector2f velocity, sf::Color color)
+void Solver::spawnObject(sf::Vector2f position, sf::Vector2f velocity, sf::Color color)
 {
     for (auto& obj : m_objects)
     {

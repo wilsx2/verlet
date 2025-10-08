@@ -53,7 +53,7 @@ int main()
         {
             for (int i = 0; i < solver.getObjects().size() / 100 + 1 && i < 6; ++i)
             {
-                solver.spawn_object(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(5.f, 0.f), sf::Color::White);
+                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(5.f, 0.f), sf::Color::White);
             }
         }
         /// Update objects
