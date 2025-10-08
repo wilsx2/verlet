@@ -9,8 +9,7 @@ Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
 
 void Solver::update(float dt)
 {
-    // Update object motion
-    for (auto& obj : m_objects)
+    for (auto& obj : m_objects) // Update object motion
     {
         obj.update(dt, m_acceleration);
     }   
