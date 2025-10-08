@@ -16,7 +16,7 @@ class CollisionGrid
     CollisionGrid(int width, int height);
     void resize(int width, int height);
     const std::unordered_set<std::size_t>& get(int x, int y) const;
-    void add(int x, int y, const std::size_t&& value);
+    void add(int x, int y, std::size_t value);
     void clear(int x, int y);
     void clear();
 };
