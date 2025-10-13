@@ -7,6 +7,16 @@ CollisionGrid::CollisionGrid(int width, int height)
     resize(width, height);
 }
 
+int CollisionGrid::getWidth()
+{
+    return m_width;
+}
+
+int CollisionGrid::getHeight()
+{
+    return m_height;
+}
+
 void CollisionGrid::resize(int width, int height)
 {
     m_width = width;
@@ -20,11 +30,6 @@ bool CollisionGrid::inBounds(int x, int y) const
 }
 
 std::set<std::size_t>& CollisionGrid::get(int x, int y)
-{
-    return m_data[x + y * m_width];
-}
-
-const std::set<std::size_t>& CollisionGrid::get(int x, int y) const
 {
     return m_data[x + y * m_width];
 }

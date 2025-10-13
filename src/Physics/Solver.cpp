@@ -2,6 +2,7 @@
 
 Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
 {
+    m_collision_grid = CollisionGrid(16,16);
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
@@ -15,6 +16,8 @@ void Solver::update(float dt)
     }   
     
     applyConstraints();
+
+    fillGrid();
     handleCollisions();
 }
 
@@ -45,18 +48,59 @@ void Solver::applyConstraints()
     }
 }
 
+void Solver::fillGrid()
+{
+    m_collision_grid.clear();
+    for (int i = 0; i < m_objects.size(); ++i)
+    {
+        auto& pos = m_objects[i].getPosition();
+        int ix = (pos.x / m_world_size.x)
+            * static_cast<float>(m_collision_grid.getWidth());
+        int iy = (pos.y / m_world_size.y)
+            * static_cast<float>(m_collision_grid.getHeight());
+
+        if (m_collision_grid.inBounds(ix,iy))
+            m_collision_grid.add(ix, iy, i);
+    }   
+}
+
 void Solver::handleCollisions()
 {
-    for (auto& a : m_objects)
+    for (int ix = 0; ix < m_collision_grid.getWidth(); ++ix)
     {
-        for (auto& b : m_objects)
+        for (int iy = 0; iy < m_collision_grid.getHeight(); ++iy)
         {
-            if (&a != &b)
-            {
-                handleCollision(a,b);
-            }
+            handleCollisionsInCell(ix, iy);
         }   
     }   
+}
+
+#include <iostream>
+void Solver::handleCollisionsInCell(int ix, int iy)
+{
+    std::set<int> object_indices {};
+
+    // Aggregate all objects which may collide with objects in the cell
+    for(int x = ix - 1; x <= ix + 1; ++x)
+    {
+        for(int y = iy - 1; y <= iy + 1; ++y)
+        {
+            if (m_collision_grid.inBounds(x,y)) {
+                auto& contents = m_collision_grid.get(x,y);
+                object_indices.insert(contents.begin(), contents.end());
+            }
+        }
+    }
+
+    // Handle collisions between objects
+    for(auto i : object_indices)
+    {
+        for(auto j : object_indices)
+        {
+            if (i != j)
+                handleCollision(m_objects[i],m_objects[j]);
+        }
+    }
 }
 
 void Solver::handleCollision(PhysicsObject& a, PhysicsObject& b)
