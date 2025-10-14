@@ -97,7 +97,8 @@ void Solver::handleCollisionsInCell(int ix, int iy)
     auto& objects = m_collision_grid.get(ix,iy);
 
     // Aggregate all objects which may collide with objects in the cell
-    for(auto& object : objects) {
+    for(auto& object : objects)
+    {
         for (int x = ix - 1; x <= ix + 1; ++x)
         {
             for (int y = iy - 1; y <= iy + 1; ++y)

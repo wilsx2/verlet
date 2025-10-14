@@ -6,7 +6,7 @@
 
 using Clock = std::chrono::steady_clock;
 
-constexpr float RADIUS = 10.f;
+constexpr float RADIUS = 8.f;
 constexpr float FRAME_TARGET = 60.f;
 
 int main()
@@ -19,7 +19,7 @@ int main()
 
     bool frame_target_lost = false;
     int frames_under_target = 0;
-    window.setFramerateLimit(FRAME_TARGET + 1.f);
+    window.setFramerateLimit(FRAME_TARGET + 2.f);
     sf::Clock clock;
     while (window.isOpen())
     {
@@ -51,9 +51,9 @@ int main()
 
         if (!frame_target_lost)
         {
-            for (int i = 0; i < solver.getObjects().size() / 50 + 1; ++i)
+            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < 16; ++i)
             {
-                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(5.f, 0.f), sf::Color::White);
+                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(3.f, 0.f), sf::Color::White);
             }
         }
         /// Update objects

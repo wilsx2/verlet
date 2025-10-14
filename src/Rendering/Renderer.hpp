@@ -3,14 +3,16 @@
 
 #include <SFML/Graphics.hpp>
 #include "../Physics/Solver.hpp"
+#include "../Utility/ThreadPool.hpp"
 
 class Renderer
 {
     private:
-    sf::CircleShape m_circle;
+    sf::VertexArray m_vertices;
+    ThreadPool m_pool;
 
     public:
-    Renderer() = default;
+    Renderer();
     void render(sf::RenderTarget& target, Solver& solver);
 };
 
