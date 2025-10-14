@@ -1,8 +1,10 @@
 #include "Solver.hpp"
+#include <iostream>
 
 Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
 {
-    m_collision_grid = CollisionGrid(16,16);
+    std::cout << std::thread::hardware_concurrency();
+    m_collision_grid = CollisionGrid(6,6);
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
@@ -66,16 +68,22 @@ void Solver::fillGrid()
 
 void Solver::handleCollisions()
 {
-    for (int ix = 0; ix < m_collision_grid.getWidth(); ++ix)
-    {
-        for (int iy = 0; iy < m_collision_grid.getHeight(); ++iy)
-        {
-            handleCollisionsInCell(ix, iy);
-        }   
-    }   
+    for (int dx = 0; dx <= 1; dx++) {
+        for (int dy = 0; dy <= 1; dy++) {
+
+            for (int ix = dx; ix < m_collision_grid.getWidth(); ix += 2)
+            {
+                for (int iy = dy; iy < m_collision_grid.getHeight(); iy += 2)
+                {
+                    m_pool.enqueue([this, ix, iy](){handleCollisionsInCell(ix, iy);});
+                }   
+            }   
+
+            m_pool.wait();
+        }
+    }
 }
 
-#include <iostream>
 void Solver::handleCollisionsInCell(int ix, int iy)
 {
     std::set<int> object_indices {};

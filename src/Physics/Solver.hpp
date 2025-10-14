@@ -4,11 +4,13 @@
 #include <vector>
 #include "PhysicsObject.hpp"
 #include "../Utility/CollisionGrid.hpp"
+#include "../Utility/ThreadPool.hpp"
 
 class Solver
 {
     private:
     CollisionGrid m_collision_grid; // Logically subdivides the world into cells for parallelism
+    ThreadPool m_pool;
     std::vector<PhysicsObject> m_objects;
     sf::Vector2f m_world_size;
     sf::Vector2f m_acceleration;
