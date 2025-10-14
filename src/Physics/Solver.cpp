@@ -5,7 +5,7 @@
 Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
     : m_pool(ThreadPool(std::thread::hardware_concurrency()))
 {
-    m_collision_grid = CollisionGrid(6,6);
+    m_collision_grid = CollisionGrid(16,16);
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
@@ -84,8 +84,8 @@ void Solver::handleCollisions()
                 for (int iy = dy; iy < m_collision_grid.getHeight(); iy += 2)
                 {
                     m_pool.enqueue([this, ix, iy](){handleCollisionsInCell(ix, iy);});
-                }   
-            }   
+                }
+            }
 
             m_pool.wait();
         }
@@ -94,28 +94,24 @@ void Solver::handleCollisions()
 
 void Solver::handleCollisionsInCell(int ix, int iy)
 {
-    std::vector<int> object_indices {};
-    object_indices.reserve(32);
+    auto& objects = m_collision_grid.get(ix,iy);
 
     // Aggregate all objects which may collide with objects in the cell
-    for(int x = ix - 1; x <= ix + 1; ++x)
-    {
-        for(int y = iy - 1; y <= iy + 1; ++y)
+    for(auto& object : objects) {
+        for (int x = ix - 1; x <= ix + 1; ++x)
         {
-            if (m_collision_grid.inBounds(x,y)) {
-                auto& contents = m_collision_grid.get(x,y);
-                object_indices.insert(object_indices.end(), contents.begin(), contents.end());
+            for (int y = iy - 1; y <= iy + 1; ++y)
+            {
+                if (m_collision_grid.inBounds(x,y))
+                {
+                    auto& others = m_collision_grid.get(x,y);
+                    for(auto& other : others)
+                    {
+                        if(other != object)
+                        handleCollision(m_objects[object], m_objects[other]);
+                    }
+                }
             }
-        }
-    }
-
-    // Handle collisions between objects
-    for(auto i : object_indices)
-    {
-        for(auto j : object_indices)
-        {
-            if (i != j)
-                handleCollision(m_objects[i],m_objects[j]);
         }
     }
 }
