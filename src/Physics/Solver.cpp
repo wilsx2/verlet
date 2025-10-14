@@ -86,7 +86,7 @@ void Solver::handleCollisions()
 
 void Solver::handleCollisionsInCell(int ix, int iy)
 {
-    std::set<int> object_indices {};
+    std::vector<int> object_indices {};
 
     // Aggregate all objects which may collide with objects in the cell
     for(int x = ix - 1; x <= ix + 1; ++x)
@@ -95,7 +95,7 @@ void Solver::handleCollisionsInCell(int ix, int iy)
         {
             if (m_collision_grid.inBounds(x,y)) {
                 auto& contents = m_collision_grid.get(x,y);
-                object_indices.insert(contents.begin(), contents.end());
+                object_indices.insert(object_indices.end(), contents.begin(), contents.end());
             }
         }
     }

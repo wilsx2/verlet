@@ -29,14 +29,14 @@ bool CollisionGrid::inBounds(int x, int y) const
     return x >= 0 && y >= 0 && x < m_width && y < m_height;
 }
 
-std::set<std::size_t>& CollisionGrid::get(int x, int y)
+std::vector<std::size_t>& CollisionGrid::get(int x, int y)
 {
     return m_data[x + y * m_width];
 }
 
 void CollisionGrid::add(int x, int y, std::size_t value)
 {
-    get(x,y).insert(value);
+    get(x,y).emplace_back(value);
 }
 
 void CollisionGrid::clear(int x, int y)
