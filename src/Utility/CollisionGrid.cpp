@@ -46,6 +46,7 @@ void CollisionGrid::clear(int x, int y)
 
 void CollisionGrid::clear()
 {
-    m_data.resize(0);
-    m_data.resize(m_width * m_height);
+    for(auto& cell : m_data) {
+        cell.clear();
+    }
 }
