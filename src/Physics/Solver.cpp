@@ -1,52 +1,58 @@
 #include "Solver.hpp"
+#include <cmath>
 #include <iostream>
 
 Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
+    : m_pool(ThreadPool(std::thread::hardware_concurrency()))
 {
-    std::cout << std::thread::hardware_concurrency();
     m_collision_grid = CollisionGrid(6,6);
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
+
+    m_objects.reserve(1024);
 }
 
 void Solver::update(float dt)
 {
-    for (auto& obj : m_objects) // Update object motion
-    {
-        obj.update(dt, m_acceleration);
-    }   
-    
-    applyConstraints();
+    int threads = m_pool.size();
+    int slice_size = ((m_objects.size() + threads - 1) / threads);
+    if(slice_size <= 0)
+        return;
 
-    fillGrid();
+    for (int i = 0; i < m_objects.size(); i += slice_size) // Update object motion
+    {
+        m_pool.enqueue([this, dt, slice_size, i](){
+            for(int j = i; j < i + slice_size && j < m_objects.size(); j++){
+                PhysicsObject& obj = m_objects[j];
+                obj.update(dt, m_acceleration);
+                applyConstraints(obj);
+        }});
+    }
+    m_pool.wait();
+
     handleCollisions();
 }
 
-void Solver::applyConstraints()
+void Solver::applyConstraints(PhysicsObject& obj)
 {
-    for (auto& obj : m_objects)
+    auto& pos = obj.getPosition(); 
+    if (pos.x - m_radius < 0.f)
     {
+        obj.setPosition({m_radius, pos.y});
+    }
+    else if (pos.x + m_radius > m_world_size.x)
+    {
+        obj.setPosition({m_world_size.x - m_radius, pos.y});
+    }
 
-        auto& pos = obj.getPosition(); 
-        if (pos.x - m_radius < 0.f)
-        {
-            obj.setPosition({m_radius, pos.y});
-        }
-        else if (pos.x + m_radius > m_world_size.x)
-        {
-            obj.setPosition({m_world_size.x - m_radius, pos.y});
-        }
-
-        if (pos.y - m_radius < 0.f)
-        {
-            obj.setPosition({pos.x, m_radius});
-        }
-        else if (pos.y + m_radius > m_world_size.y)
-        {
-            obj.setPosition({pos.x, m_world_size.y - m_radius});
-        }
-        
+    if (pos.y - m_radius < 0.f)
+    {
+        obj.setPosition({pos.x, m_radius});
+    }
+    else if (pos.y + m_radius > m_world_size.y)
+    {
+        obj.setPosition({pos.x, m_world_size.y - m_radius});
     }
 }
 
@@ -63,11 +69,13 @@ void Solver::fillGrid()
 
         if (m_collision_grid.inBounds(ix,iy))
             m_collision_grid.add(ix, iy, i);
-    }   
+    } 
 }
 
 void Solver::handleCollisions()
 {
+    fillGrid();
+
     for (int dx = 0; dx <= 1; dx++) {
         for (int dy = 0; dy <= 1; dy++) {
 
@@ -87,6 +95,7 @@ void Solver::handleCollisions()
 void Solver::handleCollisionsInCell(int ix, int iy)
 {
     std::vector<int> object_indices {};
+    object_indices.reserve(32);
 
     // Aggregate all objects which may collide with objects in the cell
     for(int x = ix - 1; x <= ix + 1; ++x)

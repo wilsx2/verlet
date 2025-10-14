@@ -29,6 +29,7 @@ public:
 
     void enqueue(std::function<void()> job);
     void wait();
+    std::size_t size();
 };
 
 #endif

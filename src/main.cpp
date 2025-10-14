@@ -51,7 +51,7 @@ int main()
 
         if (!frame_target_lost)
         {
-            for (int i = 0; i < solver.getObjects().size() / 100 + 1 && i < 6; ++i)
+            for (int i = 0; i < solver.getObjects().size() / 50 + 1; ++i)
             {
                 solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(5.f, 0.f), sf::Color::White);
             }

@@ -77,3 +77,8 @@ void ThreadPool::wait()
         return m_jobs.empty() && m_busy_jobs == 0;
     });
 }
+
+std::size_t ThreadPool::size()
+{
+    return m_workers.size();
+}

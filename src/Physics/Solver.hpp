@@ -17,7 +17,7 @@ class Solver
     float m_radius;
     void fillGrid();
     void handleCollisionsInCell(int ix, int iy);
-    void applyConstraints();
+    void applyConstraints(PhysicsObject& obj); 
     void handleCollisions();
     void handleCollision(PhysicsObject& a, PhysicsObject& b);
     
