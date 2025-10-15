@@ -5,12 +5,12 @@
 Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
     : m_pool(ThreadPool(std::thread::hardware_concurrency()))
 {
-    m_collision_grid = CollisionGrid(16,16);
+    m_collision_grid = CollisionGrid(32,32);
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
 
-    m_objects.reserve(1024);
+    m_objects.reserve(65536);
 }
 
 void Solver::update(float dt)
