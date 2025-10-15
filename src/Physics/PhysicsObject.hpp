@@ -8,6 +8,7 @@ class PhysicsObject
     private:
     sf::Vector2f    m_position;
     sf::Vector2f    m_prev_position;
+    float           m_prev_dt;
     sf::Color       m_color;
 
     public:

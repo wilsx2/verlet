@@ -8,13 +8,15 @@ PhysicsObject::PhysicsObject(sf::Vector2f position, sf::Vector2f velocity, sf::C
     m_color = color;
     m_position = position;
     m_prev_position = position - velocity;
+    m_prev_dt = 1/60.f;
 }
 
 void PhysicsObject::update(float dt, sf::Vector2f acceleration)
 {
-    auto displacement = m_position - m_prev_position;
+    auto velocity = (m_position - m_prev_position) * (dt / m_prev_dt);
     m_prev_position = m_position;
-    m_position = m_position + displacement + acceleration * (dt * dt);
+    m_position = m_position + velocity + acceleration * (dt * dt);
+    m_prev_dt = dt;
 }
 
 void PhysicsObject::setPosition(sf::Vector2f v)

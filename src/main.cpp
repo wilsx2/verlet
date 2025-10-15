@@ -19,7 +19,6 @@ int main()
 
     bool frame_target_lost = false;
     int frames_under_target = 0;
-    window.setFramerateLimit(FRAME_TARGET + 5.f);
     sf::Clock clock;
     while (window.isOpen())
     {
@@ -39,7 +38,7 @@ int main()
         if (1.f / dt < FRAME_TARGET)
         {
             frames_under_target++;
-            if (frames_under_target >= 5)
+            if (frames_under_target >= 10)
             {
                 frame_target_lost = true;
             }
