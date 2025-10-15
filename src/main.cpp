@@ -6,7 +6,7 @@
 
 using Clock = std::chrono::steady_clock;
 
-constexpr float RADIUS = 8.f;
+constexpr float RADIUS = 6.f;
 constexpr float FRAME_TARGET = 60.f;
 
 int main()
@@ -51,7 +51,7 @@ int main()
 
         if (!frame_target_lost)
         {
-            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / (RADIUS * 2); ++i)
+            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < 20; ++i)
             {
                 solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(3.f, 0.f), sf::Color::White);
             }

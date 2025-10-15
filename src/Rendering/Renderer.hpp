@@ -9,6 +9,7 @@ class Renderer
 {
     private:
     sf::VertexArray m_vertices;
+    sf::Texture m_texture;
     ThreadPool m_pool;
 
     public:
