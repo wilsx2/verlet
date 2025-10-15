@@ -2,8 +2,8 @@
 #include <cmath>
 #include <iostream>
 
-Solver::Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
-    : m_pool(ThreadPool(std::thread::hardware_concurrency()))
+Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
+    : m_pool(pool)
 {
     m_collision_grid = CollisionGrid(32,32);
     m_world_size = world_size;

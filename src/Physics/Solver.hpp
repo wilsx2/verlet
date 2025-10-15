@@ -10,7 +10,7 @@ class Solver
 {
     private:
     CollisionGrid m_collision_grid; // Logically subdivides the world into cells for parallelism
-    ThreadPool m_pool;
+    ThreadPool& m_pool;
     std::vector<PhysicsObject> m_objects;
     sf::Vector2f m_world_size;
     sf::Vector2f m_acceleration;
@@ -23,7 +23,7 @@ class Solver
     
     public:
     Solver() = default;
-    Solver(sf::Vector2f world_size, sf::Vector2f acceleration, float radius);
+    Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f acceleration, float radius);
     void update(float dt);
     void spawnObject(sf::Vector2f position, sf::Vector2f velocity, sf::Color color);
     const std::vector<PhysicsObject>& getObjects() const;

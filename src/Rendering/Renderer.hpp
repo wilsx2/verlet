@@ -10,10 +10,10 @@ class Renderer
     private:
     sf::VertexArray m_vertices;
     sf::Texture m_texture;
-    ThreadPool m_pool;
+    ThreadPool& m_pool;
 
     public:
-    Renderer();
+    Renderer(ThreadPool& pool);
     void render(sf::RenderTarget& target, Solver& solver);
 };
 

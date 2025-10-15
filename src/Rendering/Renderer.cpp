@@ -1,7 +1,8 @@
 #include "Renderer.hpp"
 
-Renderer::Renderer()
-    : m_vertices(sf::PrimitiveType::Triangles)
+Renderer::Renderer(ThreadPool& pool)
+    : m_pool(pool)
+    , m_vertices(sf::PrimitiveType::Triangles)
 {
     auto _ = m_texture.loadFromFile("res/kirby.png");
     auto _ = m_texture.generateMipmap();

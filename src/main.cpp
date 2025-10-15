@@ -11,9 +11,11 @@ constexpr float FRAME_TARGET = 60.f;
 
 int main()
 {
+    ThreadPool pool (std::thread::hardware_concurrency());
+
     sf::Vector2u world_size {1000, 1000};
-    Solver solver (static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
-    Renderer renderer {};
+    Solver solver (pool, static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
+    Renderer renderer (pool);
 
     sf::RenderWindow window(sf::VideoMode(world_size), "SFML Verlet");
 
