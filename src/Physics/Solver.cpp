@@ -15,20 +15,11 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
 
 void Solver::update(float dt)
 {
-    int threads = m_pool.size();
-    int slice_size = ((m_objects.size() + threads - 1) / threads);
-    if(slice_size <= 0)
-        return;
+    m_pool.enqueue_for_each<PhysicsObject>(m_objects, [this, dt](PhysicsObject& object, std::size_t) {
+        object.update(dt, m_acceleration);
+        applyConstraints(object);
 
-    for (int i = 0; i < m_objects.size(); i += slice_size) // Update object motion
-    {
-        m_pool.enqueue([this, dt, slice_size, i](){
-            for(int j = i; j < i + slice_size && j < m_objects.size(); j++){
-                PhysicsObject& obj = m_objects[j];
-                obj.update(dt, m_acceleration);
-                applyConstraints(obj);
-        }});
-    }
+    });
     m_pool.wait();
 
     handleCollisions();

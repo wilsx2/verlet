@@ -11,9 +11,9 @@ constexpr float FRAME_TARGET = 60.f;
 
 int main()
 {
-    ThreadPool pool (std::thread::hardware_concurrency());
+    ThreadPool pool (1);//(std::thread::hardware_concurrency());
 
-    sf::Vector2u world_size {1000, 1000};
+    sf::Vector2u world_size {1600, 1000};
     Solver solver (pool, static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
     Renderer renderer (pool);
 
@@ -54,7 +54,7 @@ int main()
         {
             for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / RADIUS / 2 / 8; ++i)
             {
-                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(3.f, 0.f), sf::Color::White);
+                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(6.f, 1.f), sf::Color::White);
             }
         }
         /// Update objects

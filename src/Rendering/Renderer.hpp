@@ -10,6 +10,7 @@ class Renderer
     private:
     sf::VertexArray m_vertices;
     sf::Texture m_texture;
+    sf::Vector2f m_tex_size;
     ThreadPool& m_pool;
 
     public:

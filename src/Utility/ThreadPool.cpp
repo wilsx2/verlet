@@ -27,16 +27,6 @@ ThreadPool::~ThreadPool()
         worker.join();
 }
 
-void ThreadPool::enqueue(std::function<void()> job)
-{
-    {
-        std::unique_lock<std::mutex> lock(m_queue_mutex);
-        m_jobs.emplace(std::move(job));
-    }
-
-    m_take_condition.notify_one();
-}
-
 void ThreadPool::worker_loop()
 {
     while (true)
@@ -81,4 +71,14 @@ void ThreadPool::wait()
 std::size_t ThreadPool::size()
 {
     return m_workers.size();
+}
+
+void ThreadPool::enqueue(std::function<void()> job)
+{
+    {
+        std::unique_lock<std::mutex> lock(m_queue_mutex);
+        m_jobs.emplace(std::move(job));
+    }
+
+    m_take_condition.notify_one();
 }
