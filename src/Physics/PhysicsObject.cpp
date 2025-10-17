@@ -1,4 +1,4 @@
-#include "PhysicsObject.hpp"
+#include "Physics/PhysicsObject.hpp"
 
 PhysicsObject::PhysicsObject(sf::Vector2f position, sf::Color color)
     : PhysicsObject(position, {0.f,0.f}, color){}

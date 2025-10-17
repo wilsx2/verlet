@@ -2,8 +2,8 @@
 #define RENDERER_H
 
 #include <SFML/Graphics.hpp>
-#include "../Physics/Solver.hpp"
-#include "../Utility/ThreadPool.hpp"
+#include "Physics/Solver.hpp"
+#include "Utility/ThreadPool.hpp"
 
 class Renderer
 {

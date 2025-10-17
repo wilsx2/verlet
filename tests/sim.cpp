@@ -1,8 +1,8 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "../src/Physics/Solver.hpp"
-#include "../src/Rendering/Renderer.hpp"
+#include "Physics/Solver.hpp"
+#include "Rendering/Renderer.hpp"
 
 using Clock = std::chrono::steady_clock;
 

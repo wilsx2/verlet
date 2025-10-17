@@ -1,4 +1,4 @@
-#include "Renderer.hpp"
+#include "Rendering/Renderer.hpp"
 
 Renderer::Renderer(ThreadPool& pool)
     : m_pool(pool)

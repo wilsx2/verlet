@@ -3,8 +3,8 @@
 
 #include <vector>
 #include "PhysicsObject.hpp"
-#include "../Utility/CollisionGrid.hpp"
-#include "../Utility/ThreadPool.hpp"
+#include "Utility/CollisionGrid.hpp"
+#include "Utility/ThreadPool.hpp"
 
 class Solver
 {

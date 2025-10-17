@@ -1,4 +1,4 @@
-#include "CollisionGrid.hpp"
+#include "Utility/CollisionGrid.hpp"
 
 CollisionGrid::CollisionGrid() = default;
 

@@ -1,11 +1,7 @@
-# Compiler settings
-CC := g++
-CFLAGS := -O3 -march=native
-DEPS := -lsfml-graphics -lsfml-window -lsfml-system
-
 # Directories
 BUILD_DIR := build
 SRC_DIR := src
+INC_DIR := include
 TEST_DIR := tests
 RES_DIR := res
 
@@ -13,6 +9,11 @@ RES_DIR := res
 SRCS := $(shell find $(SRC_DIR) -name "*.cpp")
 TESTS := $(shell find $(TEST_DIR) -name "*.cpp")
 EXES := $(foreach exe, $(TESTS:%.cpp=%.exe), $(BUILD_DIR)/$(notdir $(exe))) # Create exe for each test
+
+# Compiler settings
+CC := g++
+CFLAGS := -I$(INC_DIR) -O3 -march=native
+DEPS := -lsfml-graphics -lsfml-window -lsfml-system
 
 # Targets
 all: $(EXES)
