@@ -1,8 +1,8 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#include "Physics/Solver.hpp"
-#include "Rendering/Renderer.hpp"
+#include "../src/Physics/Solver.hpp"
+#include "../src/Rendering/Renderer.hpp"
 
 using Clock = std::chrono::steady_clock;
 
@@ -11,7 +11,7 @@ constexpr float FRAME_TARGET = 60.f;
 
 int main()
 {
-    ThreadPool pool (1);//(std::thread::hardware_concurrency());
+    ThreadPool pool (std::thread::hardware_concurrency());
 
     sf::Vector2u world_size {1600, 1000};
     Solver solver (pool, static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
