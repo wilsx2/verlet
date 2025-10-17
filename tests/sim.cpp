@@ -4,8 +4,6 @@
 #include "Physics/Solver.hpp"
 #include "Rendering/Renderer.hpp"
 
-using Clock = std::chrono::steady_clock;
-
 constexpr float RADIUS = 6.f;
 constexpr float FRAME_TARGET = 60.f;
 
