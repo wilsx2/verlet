@@ -1,33 +1,12 @@
 #include "Utility/ThreadPool.hpp"
 
-ThreadPool::ThreadPool()
-    : ThreadPool(std::thread::hardware_concurrency())
+Worker::Worker(ThreadPool& pool)
+    : m_pool(pool)
+    , m_thread([this](){loop();})
+    , m_stopping(false)
 {}
 
-ThreadPool::ThreadPool(int num_threads)
-{
-    if (num_threads <= 0)
-        num_threads = 1;
-
-    m_workers.reserve(num_threads);
-    for (int i = 0; i < num_threads; ++i)
-        m_workers.emplace_back([this]() { worker_loop(); });
-}
-
-ThreadPool::~ThreadPool()
-{
-    {
-        std::unique_lock<std::mutex> lock(m_queue_mutex);
-        m_stopping = true;
-    }
-
-    m_take_condition.notify_all();
-
-    for (auto& worker : m_workers)
-        worker.join();
-}
-
-void ThreadPool::worker_loop()
+void Worker::loop()
 {
     while (true)
     {
@@ -36,7 +15,7 @@ void ThreadPool::worker_loop()
         {
             std::unique_lock<std::mutex> lock(m_queue_mutex);
 
-            m_take_condition.wait(lock, [this]() {
+            m_condition.wait(lock, [this]() {
                 return m_stopping || !m_jobs.empty();
             });
 
@@ -45,26 +24,59 @@ void ThreadPool::worker_loop()
 
             job = std::move(m_jobs.front());
             m_jobs.pop();
-            ++m_busy_jobs;
         }
 
         job();
+        --m_pool.m_jobs_remaining;
 
-        {
-            std::unique_lock<std::mutex> lock(m_queue_mutex);
-            --m_busy_jobs;
-
-            if (m_jobs.empty() && m_busy_jobs == 0)
-                m_wait_condition.notify_all();
-        }
+        if (m_pool.m_jobs_remaining == 0)
+            m_pool.m_wait_condition.notify_all();
     }
+}
+
+void Worker::enqueue(std::function<void()> job)
+{
+    {
+        std::unique_lock<std::mutex> lock(m_queue_mutex);
+        m_jobs.emplace(std::move(job));
+    }
+
+    m_condition.notify_one();
+}
+
+void Worker::stop()
+{
+    m_stopping = true;
+    m_condition.notify_all(); // should be only one
+    m_thread.join();
+}
+
+ThreadPool::ThreadPool()
+    : ThreadPool(std::thread::hardware_concurrency())
+{}
+
+ThreadPool::ThreadPool(int num_threads)
+{
+    if (num_threads <= 0)
+        num_threads = 1;
+    m_workers.reserve(num_threads);
+    for(int i = 0; i < num_threads; ++i)
+    {
+        m_workers.emplace_back(std::make_unique<Worker>(*this));
+    }
+}
+
+ThreadPool::~ThreadPool()
+{
+    for (auto& worker : m_workers)
+        worker->stop();
 }
 
 void ThreadPool::wait()
 {
-    std::unique_lock<std::mutex> lock(m_queue_mutex);
+    std::unique_lock<std::mutex> lock(m_shared_mutex);
     m_wait_condition.wait(lock, [this]() {
-        return m_jobs.empty() && m_busy_jobs == 0;
+        return m_jobs_remaining == 0;
     });
 }
 
@@ -75,10 +87,8 @@ std::size_t ThreadPool::size()
 
 void ThreadPool::enqueue(std::function<void()> job)
 {
-    {
-        std::unique_lock<std::mutex> lock(m_queue_mutex);
-        m_jobs.emplace(std::move(job));
-    }
+    ++m_jobs_remaining;
 
-    m_take_condition.notify_one();
+    m_workers[m_worker_to_enqueue]->enqueue(job);
+    m_worker_to_enqueue = ++m_worker_to_enqueue % m_workers.size();
 }

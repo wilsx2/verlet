@@ -7,20 +7,37 @@
 #include <condition_variable>
 #include <thread>
 #include <mutex>
+#include <atomic>
+#include <memory>
+
+class ThreadPool;
+
+class Worker
+{
+    private:
+    ThreadPool& m_pool;
+    std::thread m_thread;
+    std::mutex m_queue_mutex;
+    std::condition_variable m_condition;
+    std::queue<std::function<void()>> m_jobs;
+    std::atomic<bool> m_stopping;
+
+    public:
+    Worker(ThreadPool& pool);
+    void loop();
+    void enqueue(std::function<void()> job);
+    void stop();
+};
 
 class ThreadPool
 {
     private:
-    std::mutex m_queue_mutex;
-    std::queue<std::function<void()>> m_jobs;
-    std::vector<std::thread> m_workers;
-    std::condition_variable m_take_condition;
+    std::vector<std::unique_ptr<Worker>> m_workers;
+    std::mutex m_shared_mutex;
     std::condition_variable m_wait_condition;
+    std::atomic<int> m_jobs_remaining = 0;
+    int m_worker_to_enqueue;
 
-    bool m_stopping = false;
-    int m_busy_jobs = 0;
-
-    void worker_loop();
     template <class V, class F>
     void enqueue_for_each_generic(V& data, F&& procedure);
 
@@ -35,6 +52,8 @@ class ThreadPool
     void enqueue_for_each(std::vector<T>& data, std::function<void(T&, std::size_t)>&& procedure);
     template <class T>
     void enqueue_for_each(const std::vector<T>& data, std::function<void(const T&, std::size_t)>&& procedure);
+
+    friend class Worker;
 };
 
 template <class V, class F>
