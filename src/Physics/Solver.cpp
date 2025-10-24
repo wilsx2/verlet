@@ -115,13 +115,14 @@ void Solver::handleCollisionsInCell(int ix, int iy)
 void Solver::handleCollision(PhysicsObject& a, PhysicsObject& b)
 {
     auto difference = a.getPosition() - b.getPosition();
-    auto overlap = (m_radius * 2) - difference.length();
+    auto dist = difference.length();
+    auto overlap = (m_radius * 2) - dist;
     if (overlap < 0.f)
     {
         return;
     }
 
-    auto nudge = difference.normalized() * (overlap / 2.f);
+    auto nudge = (difference / dist) * (overlap / 2.f);
     a.setPosition(a.getPosition() + nudge);
     b.setPosition(b.getPosition() - nudge);
 }
