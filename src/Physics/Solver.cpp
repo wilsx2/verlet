@@ -15,14 +15,18 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
 
 void Solver::update(float dt)
 {
-    m_pool.enqueue_for_each<PhysicsObject>(m_objects, [this, dt](PhysicsObject& object, std::size_t) {
-        object.update(dt, m_acceleration);
-        applyConstraints(object);
+    float dt_substep = dt / static_cast<float>(SUB_STEPS);
+    for (int i = 0; i < SUB_STEPS; ++i)
+    {
+        m_pool.enqueue_for_each<PhysicsObject>(m_objects, [this, dt_substep](PhysicsObject& object, std::size_t) {
+            object.update(dt_substep, m_acceleration);
+            applyConstraints(object);
 
-    });
-    m_pool.wait();
+        });
+        m_pool.wait();
 
-    handleCollisions();
+        handleCollisions();
+    }
 }
 
 void Solver::applyConstraints(PhysicsObject& obj)

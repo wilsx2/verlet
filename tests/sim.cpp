@@ -58,7 +58,6 @@ int main()
         /// Update objects
         solver.update(dt);
 
-
         // Draw
         window.clear(sf::Color::Black);
 

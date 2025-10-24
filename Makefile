@@ -25,7 +25,7 @@ $(EXES): $(BUILD_DIR)/%.exe: $(TEST_DIR)/%.cpp $(OBJS)
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< $(OBJS) -o $@ $(DEPS)
 
-$(BUILD_DIR)/threadpool.exe: $(TEST_DIR)/threadpool.cpp $(OBJS)
+$(BUILD_DIR)/sim.exe: $(TEST_DIR)/sim.cpp $(OBJS)
 	mkdir -p $(dir $@)
 	cp -r $(RES_DIR) $(BUILD_DIR)/$(RES_DIR)
 	$(CC) $(CFLAGS) $< $(OBJS) -o $@ $(DEPS)

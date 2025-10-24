@@ -9,6 +9,7 @@
 class Solver
 {
     private:
+    static constexpr int SUB_STEPS = 2;
     CollisionGrid m_collision_grid; // Logically subdivides the world into cells for parallelism
     ThreadPool& m_pool;
     std::vector<PhysicsObject> m_objects;
