@@ -9,6 +9,7 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
     m_world_size = world_size;
     m_acceleration = acceleration;
     m_radius = radius;
+    m_diameter = radius * 2;
 
     m_objects.reserve(65536);
 }
@@ -116,7 +117,7 @@ void Solver::handleCollision(PhysicsObject& a, PhysicsObject& b)
 {
     auto difference = a.getPosition() - b.getPosition();
     auto dist = difference.length();
-    auto overlap = (m_radius * 2) - dist;
+    auto overlap = m_diameter - dist;
     if (overlap < 0.f)
     {
         return;

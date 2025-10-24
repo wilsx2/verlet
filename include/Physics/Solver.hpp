@@ -16,6 +16,7 @@ class Solver
     sf::Vector2f m_world_size;
     sf::Vector2f m_acceleration;
     float m_radius;
+    float m_diameter;
     void fillGrid();
     void handleCollisionsInCell(int ix, int iy);
     void applyConstraints(PhysicsObject& obj); 
