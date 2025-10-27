@@ -4,7 +4,7 @@
 #include "Physics/Solver.hpp"
 #include "Rendering/Renderer.hpp"
 
-constexpr float RADIUS = 6.f;
+constexpr float RADIUS = 5.f;
 constexpr float FRAME_TARGET = 60.f;
 
 int main()
@@ -50,9 +50,9 @@ int main()
 
         if (!frame_target_lost)
         {
-            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / RADIUS / 2 / 8; ++i)
+            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / RADIUS / 2 / 6; ++i)
             {
-                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(6.f, 1.f), sf::Color::White);
+                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(6.f, 1.f), dt);
             }
         }
         /// Update objects

@@ -10,8 +10,10 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
     m_acceleration = acceleration;
     m_radius = radius;
     m_diameter = radius * 2;
+    m_prev_dt = 1 / 60.f;
 
-    m_objects.reserve(65536);
+    m_positions.reserve(65536);
+    m_prev_positions.reserve(65536);
 }
 
 void Solver::update(float dt)
@@ -19,45 +21,54 @@ void Solver::update(float dt)
     float dt_substep = dt / static_cast<float>(SUB_STEPS);
     for (int i = 0; i < SUB_STEPS; ++i)
     {
-        m_pool.enqueue_for_each<PhysicsObject>(m_objects, [this, dt_substep](PhysicsObject& object, std::size_t) {
-            object.update(dt_substep, m_acceleration);
-            applyConstraints(object);
-
+        m_pool.enqueue_for_each<sf::Vector2f>(m_positions, [this, dt_substep](sf::Vector2f&, std::size_t i) {
+            updateObject(i, dt_substep);
+            applyConstraints(i);
         });
         m_pool.wait();
-
         handleCollisions();
+        m_prev_dt = dt_substep;
     }
 }
 
-void Solver::applyConstraints(PhysicsObject& obj)
+void Solver::updateObject(int i, float dt)
 {
-    auto& pos = obj.getPosition(); 
+    auto& pos = m_positions[i];
+    auto& prev_pos = m_prev_positions[i];
+
+    auto velocity = (pos - prev_pos) * (dt / m_prev_dt);
+    prev_pos = pos;
+    pos = pos + velocity + m_acceleration * (dt * dt);
+}
+
+void Solver::applyConstraints(std::size_t i)
+{
+    auto& pos = m_positions[i];
     if (pos.x - m_radius < 0.f)
     {
-        obj.setPosition({m_radius, pos.y});
+        pos.x = m_radius;
     }
     else if (pos.x + m_radius > m_world_size.x)
     {
-        obj.setPosition({m_world_size.x - m_radius, pos.y});
+        pos.x = m_world_size.x - m_radius;
     }
 
     if (pos.y - m_radius < 0.f)
     {
-        obj.setPosition({pos.x, m_radius});
+        pos.y = m_radius;
     }
     else if (pos.y + m_radius > m_world_size.y)
     {
-        obj.setPosition({pos.x, m_world_size.y - m_radius});
+        pos.y = m_world_size.y - m_radius;
     }
 }
 
 void Solver::fillGrid()
 {
     m_collision_grid.clear();
-    for (int i = 0; i < m_objects.size(); ++i)
+    for (int i = 0; i < m_positions.size(); ++i)
     {
-        auto& pos = m_objects[i].getPosition();
+        auto& pos = m_positions[i];
         int ix = (pos.x / m_world_size.x)
             * static_cast<float>(m_collision_grid.getWidth());
         int iy = (pos.y / m_world_size.y)
@@ -105,7 +116,7 @@ void Solver::handleCollisionsInCell(int ix, int iy)
                     for(auto& other : others)
                     {
                         if(other != object)
-                        handleCollision(m_objects[object], m_objects[other]);
+                        handleCollision(object, other);
                     }
                 }
             }
@@ -113,37 +124,42 @@ void Solver::handleCollisionsInCell(int ix, int iy)
     }
 }
 
-void Solver::handleCollision(PhysicsObject& a, PhysicsObject& b)
+void Solver::handleCollision(std::size_t i, std::size_t j)
 {
-    auto difference = a.getPosition() - b.getPosition();
-    auto dist = difference.length();
-    auto overlap = m_diameter - dist;
+    if(m_positions[i] == m_positions[j])
+    {
+        return; // Will cause division by zero
+    }
+    sf::Vector2f difference = m_positions[i] - m_positions[j];
+    float dist = difference.length();
+    float overlap = m_diameter - dist;
     if (overlap < 0.f)
     {
         return;
     }
 
     auto nudge = (difference / dist) * (overlap / 2.f);
-    a.setPosition(a.getPosition() + nudge);
-    b.setPosition(b.getPosition() - nudge);
+    m_positions[i] = m_positions[i] + nudge;
+    m_positions[j] = m_positions[j] - nudge;
 }
 
-void Solver::spawnObject(sf::Vector2f position, sf::Vector2f velocity, sf::Color color)
+void Solver::spawnObject(sf::Vector2f position, sf::Vector2f velocity, float dt)
 {
-    for (auto& obj : m_objects)
+    for (auto& obj_pos : m_positions)
     {
-        if ((obj.getPosition() - position).length() < m_radius * 2)
+        if ((obj_pos - position).length() < m_radius * 2)
         {
             return;
         }
     }
 
-    m_objects.emplace_back(position, velocity, color);
+    m_positions.emplace_back(position);
+    m_prev_positions.emplace_back(position - velocity * m_prev_dt * 60.f);
 }
 
-const std::vector<PhysicsObject>& Solver::getObjects() const
+const std::vector<sf::Vector2f>& Solver::getObjects() const
 {
-    return m_objects;
+    return m_positions;
 }
 
 float Solver::getRadius() const
