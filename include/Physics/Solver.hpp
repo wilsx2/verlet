@@ -1,8 +1,8 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include <SFML/Graphics.hpp>
 #include <vector>
-#include "PhysicsObject.hpp"
 #include "Utility/CollisionGrid.hpp"
 #include "Utility/ThreadPool.hpp"
 
