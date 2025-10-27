@@ -3,17 +3,17 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include "PhysicsObjects.hpp"
 #include "Utility/CollisionGrid.hpp"
 #include "Utility/ThreadPool.hpp"
 
 class Solver
 {
     private:
-    static constexpr int SUB_STEPS = 1;
+    static constexpr int SUB_STEPS = 2;
     CollisionGrid m_collision_grid; // Logically subdivides the world into cells for parallelism
     ThreadPool& m_pool;
-    std::vector<sf::Vector2f> m_positions;
-    std::vector<sf::Vector2f> m_prev_positions;
+    PhysicsObjects m_objects;
     sf::Vector2f m_world_size;
     sf::Vector2f m_acceleration;
     float m_radius;

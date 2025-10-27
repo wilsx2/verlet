@@ -12,8 +12,7 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
     m_diameter = radius * 2;
     m_prev_dt = 1 / 60.f;
 
-    m_positions.reserve(65536);
-    m_prev_positions.reserve(65536);
+    m_objects.reserve(65536);
 }
 
 void Solver::update(float dt)
@@ -21,7 +20,7 @@ void Solver::update(float dt)
     float dt_substep = dt / static_cast<float>(SUB_STEPS);
     for (int i = 0; i < SUB_STEPS; ++i)
     {
-        m_pool.enqueue_for_each<sf::Vector2f>(m_positions, [this, dt_substep](sf::Vector2f&, std::size_t i) {
+        m_pool.enqueue_for_each<sf::Vector2f>(m_objects.positions, [this, dt_substep](sf::Vector2f&, std::size_t i) {
             updateObject(i, dt_substep);
             applyConstraints(i);
         });
@@ -33,8 +32,8 @@ void Solver::update(float dt)
 
 void Solver::updateObject(int i, float dt)
 {
-    auto& pos = m_positions[i];
-    auto& prev_pos = m_prev_positions[i];
+    auto& pos = m_objects.positions[i];
+    auto& prev_pos = m_objects.prev_positions[i];
 
     auto velocity = (pos - prev_pos) * (dt / m_prev_dt);
     prev_pos = pos;
@@ -43,7 +42,7 @@ void Solver::updateObject(int i, float dt)
 
 void Solver::applyConstraints(std::size_t i)
 {
-    auto& pos = m_positions[i];
+    auto& pos = m_objects.positions[i];
     if (pos.x - m_radius < 0.f)
     {
         pos.x = m_radius;
@@ -66,9 +65,9 @@ void Solver::applyConstraints(std::size_t i)
 void Solver::fillGrid()
 {
     m_collision_grid.clear();
-    for (int i = 0; i < m_positions.size(); ++i)
+    for (int i = 0; i < m_objects.size(); ++i)
     {
-        auto& pos = m_positions[i];
+        auto& pos = m_objects.positions[i];
         int ix = (pos.x / m_world_size.x)
             * static_cast<float>(m_collision_grid.getWidth());
         int iy = (pos.y / m_world_size.y)
@@ -126,11 +125,10 @@ void Solver::handleCollisionsInCell(int ix, int iy)
 
 void Solver::handleCollision(std::size_t i, std::size_t j)
 {
-    if(m_positions[i] == m_positions[j])
-    {
-        return; // Will cause division by zero
-    }
-    sf::Vector2f difference = m_positions[i] - m_positions[j];
+    auto& pos_a = m_objects.positions[i];
+    auto& pos_b = m_objects.positions[j];
+
+    sf::Vector2f difference = pos_a - pos_b;
     float dist = difference.length();
     float overlap = m_diameter - dist;
     if (overlap < 0.f)
@@ -139,13 +137,13 @@ void Solver::handleCollision(std::size_t i, std::size_t j)
     }
 
     auto nudge = (difference / dist) * (overlap / 2.f);
-    m_positions[i] = m_positions[i] + nudge;
-    m_positions[j] = m_positions[j] - nudge;
+    pos_a = pos_a + nudge;
+    pos_b = pos_b - nudge;
 }
 
 void Solver::spawnObject(sf::Vector2f position, sf::Vector2f velocity, float dt)
 {
-    for (auto& obj_pos : m_positions)
+    for (auto& obj_pos : m_objects.positions)
     {
         if ((obj_pos - position).length() < m_radius * 2)
         {
@@ -153,13 +151,16 @@ void Solver::spawnObject(sf::Vector2f position, sf::Vector2f velocity, float dt)
         }
     }
 
-    m_positions.emplace_back(position);
-    m_prev_positions.emplace_back(position - velocity * m_prev_dt * 60.f);
+    auto previous_position = position - velocity * m_prev_dt * 60.f;
+    m_objects.emplaceBack(
+        position,
+        previous_position
+    );
 }
 
 const std::vector<sf::Vector2f>& Solver::getObjects() const
 {
-    return m_positions;
+    return m_objects.positions;
 }
 
 float Solver::getRadius() const
