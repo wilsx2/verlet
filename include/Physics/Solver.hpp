@@ -3,25 +3,26 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <array>
 #include "PhysicsObjects.hpp"
-#include "Utility/CollisionGrid.hpp"
+#include "Utility/SpatialHash.hpp"
 #include "Utility/ThreadPool.hpp"
 
 class Solver
 {
     private:
-    static constexpr int SUB_STEPS = 2;
-    CollisionGrid m_collision_grid; // Logically subdivides the world into cells for parallelism
+    static constexpr int SUB_STEPS = 1;
+    SpatialHash m_spatial_hash; // Logically subdivides the world into cells for parallelism
     ThreadPool& m_pool;
     PhysicsObjects m_objects;
-    sf::Vector2f m_world_size;
-    sf::Vector2f m_acceleration;
-    float m_radius;
-    float m_diameter;
+    const sf::Vector2f m_world_size;
+    const sf::Vector2f m_acceleration;
+    const float m_radius;
+    const float m_diameter;
     float m_prev_dt;
     void updateObject(int i, float dt);
-    void fillGrid();
-    void handleCollisionsInCell(int ix, int iy);
+    void fillSpatialHash();
+    void handleCollisionsInBucket(const std::vector<std::size_t> bucket);
     void applyConstraints(std::size_t i); 
     void handleCollisions();
     void handleCollision(std::size_t i, std::size_t j);

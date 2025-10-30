@@ -12,7 +12,7 @@ int main()
     ThreadPool pool (std::thread::hardware_concurrency());
 
     sf::Vector2u world_size {1600, 1000};
-    Solver solver (pool, static_cast<sf::Vector2f>(world_size), {0.f, 100.f}, RADIUS);
+    Solver solver (pool, static_cast<sf::Vector2f>(world_size), {0.f, 50.f}, RADIUS);
     Renderer renderer (pool);
 
     sf::RenderWindow window(sf::VideoMode(world_size), "SFML Verlet");
@@ -50,9 +50,9 @@ int main()
 
         if (!frame_target_lost)
         {
-            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / RADIUS / 2 / 6; ++i)
+            for (int i = 0; i < solver.getObjects().size() / 50 + 1 && i < world_size.y / RADIUS / 2 / 4; ++i)
             {
-                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(6.f, 1.f), dt);
+                solver.spawnObject(sf::Vector2f(RADIUS,RADIUS + i * RADIUS * 2), sf::Vector2f(3.f, .5f), dt);
             }
         }
         /// Update objects

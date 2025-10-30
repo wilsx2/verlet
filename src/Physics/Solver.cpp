@@ -4,14 +4,14 @@
 
 Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f acceleration, float radius)
     : m_pool(pool)
+    , m_world_size(world_size)
+    , m_acceleration(acceleration)
+    , m_radius(radius)
+    , m_diameter(radius * 2)
+    , m_spatial_hash(m_diameter)
 {
-    m_collision_grid = CollisionGrid(32,32);
-    m_world_size = world_size;
-    m_acceleration = acceleration;
-    m_radius = radius;
-    m_diameter = radius * 2;
+    
     m_prev_dt = 1 / 60.f;
-
     m_objects.reserve(65536);
 }
 
@@ -62,63 +62,61 @@ void Solver::applyConstraints(std::size_t i)
     }
 }
 
-void Solver::fillGrid()
+void Solver::fillSpatialHash()
 {
-    m_collision_grid.clear();
+    // Clear
+    m_spatial_hash.clear();
+
+    // Populate
     for (int i = 0; i < m_objects.size(); ++i)
     {
         auto& pos = m_objects.positions[i];
-        int ix = (pos.x / m_world_size.x)
-            * static_cast<float>(m_collision_grid.getWidth());
-        int iy = (pos.y / m_world_size.y)
-            * static_cast<float>(m_collision_grid.getHeight());
-
-        if (m_collision_grid.inBounds(ix,iy))
-            m_collision_grid.add(ix, iy, i);
+        m_spatial_hash.insert(pos.x, pos.y, i);
     } 
 }
 
 void Solver::handleCollisions()
 {
-    fillGrid();
+    fillSpatialHash();
 
-    for (int dx = 0; dx <= 1; dx++) {
-        for (int dy = 0; dy <= 1; dy++) {
-
-            for (int ix = dx; ix < m_collision_grid.getWidth(); ix += 2)
-            {
-                for (int iy = dy; iy < m_collision_grid.getHeight(); iy += 2)
-                {
-                    m_pool.enqueue([this, ix, iy](){handleCollisionsInCell(ix, iy);});
-                }
-            }
-
-            m_pool.wait();
+    for(int i = 0; i < m_objects.size(); ++i)
+    {
+        auto neighbors = m_spatial_hash.getNeighbors(m_objects.positions[i].x,m_objects.positions[i].y);
+        for (auto& j : neighbors)
+        {
+            if (i != j)
+                handleCollision(i, j);
         }
     }
+
+    // for (int dx = 0; dx <= 1; dx++) {
+    //     for (int dy = 0; dy <= 1; dy++) {
+
+    //         for (float x = dx * m_diameter; x < m_world_size.x; x += m_diameter * 2)
+    //         {
+    //             for (float y = dy * m_diameter; y < m_world_size.y; y += m_diameter * 2)
+    //             {
+    //                 auto bucket = m_spatial_hash.getBucket(x, y);
+    //                 if(!bucket.empty()) 
+    //                     m_pool.enqueue([this, bucket](){handleCollisionsInBucket(bucket);});
+    //             }
+    //         }
+
+    //         m_pool.wait();
+    //     }
+    // }
 }
 
-void Solver::handleCollisionsInCell(int ix, int iy)
+void Solver::handleCollisionsInBucket(const std::vector<std::size_t> bucket)
 {
-    auto& objects = m_collision_grid.get(ix,iy);
-
-    // Aggregate all objects which may collide with objects in the cell
-    for(auto& object : objects)
+    for (auto& i : bucket)
     {
-        for (int x = ix - 1; x <= ix + 1; ++x)
+        auto neighbors = m_spatial_hash.getNeighbors(m_objects.positions[i].x,m_objects.positions[i].y);
+
+        for (auto& j : neighbors)
         {
-            for (int y = iy - 1; y <= iy + 1; ++y)
-            {
-                if (m_collision_grid.inBounds(x,y))
-                {
-                    auto& others = m_collision_grid.get(x,y);
-                    for(auto& other : others)
-                    {
-                        if(other != object)
-                        handleCollision(object, other);
-                    }
-                }
-            }
+            if (i != j)
+                handleCollision(i, j);
         }
     }
 }
