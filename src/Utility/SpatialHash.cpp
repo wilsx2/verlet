@@ -5,17 +5,42 @@ SpatialHash::SpatialHash(float cell_size)
     : m_cell_size(cell_size)
 {}
 
-#include <iostream>
+int SpatialHash::xToIx(float x)
+{
+    return static_cast<int>(x / m_cell_size);
+}
+
+int SpatialHash::yToIy(float y)
+{
+    return static_cast<int>(y / m_cell_size);
+}
+
 std::uint64_t SpatialHash::hashPosition(float x, float y)
 {
-    int ix = static_cast<int>(x / m_cell_size);
-    int iy = static_cast<int>(y / m_cell_size);
+    return hashPosition(
+        xToIx(x),
+        yToIy(y)
+    );
+}
+
+std::uint64_t SpatialHash::hashPosition(int ix, int iy)
+{
     return (ix * 82632121) ^ (iy * 42572143);
+}
+
+int SpatialHash::colorOfPosition(int ix, int iy)
+{
+    return ((ix % 2) << 1) + (iy % 2); // use &?
 }
 
 void SpatialHash::insert(float x, float y, std::size_t value)
 {
-    m_buckets[hashPosition(x,y)].push_back(value);
+    int ix = xToIx(x);
+    int iy = yToIy(y);
+    std::uint64_t hash = hashPosition(ix,iy);
+    int color = colorOfPosition(ix, iy);
+    m_buckets[hash].push_back(value);
+    m_buckets_of_color[color].emplace_back(hash);
 }
 
 std::vector<std::size_t> SpatialHash::getNeighbors(float x, float y)
@@ -40,15 +65,10 @@ std::vector<std::size_t> SpatialHash::getNeighbors(float x, float y)
     return std::move(neighbors); // necessary?
 }
 
-std::vector<std::size_t>& SpatialHash::getBucket(float x, float y)
+std::vector<std::size_t>& SpatialHash::getBucket(std::uint64_t hash)
 {
-    static std::vector<std::size_t> empty {};
-    std::uint32_t hash = hashPosition(x, y);
-
-    auto it = m_buckets.find(hash);
-    if (it != m_buckets.end())
-        return it->second;
-    return empty;
+    // Assumes that the bucket exists, will result in an error if not true.
+    return m_buckets[hash];
 }
 
 void SpatialHash::clear()
