@@ -8,9 +8,8 @@ Solver::Solver(ThreadPool& pool, sf::Vector2f world_size, sf::Vector2f accelerat
     , m_acceleration(acceleration)
     , m_radius(radius)
     , m_diameter(radius * 2)
-    , m_spatial_hash(m_diameter)
-{
-    
+    , m_spatial_hash(radius * 2)
+{   
     m_prev_dt = 1 / 60.f;
     m_objects.reserve(65536);
 }
@@ -79,40 +78,26 @@ void Solver::handleCollisions()
 {
     fillSpatialHash();
 
-    for(int i = 0; i < m_objects.size(); ++i)
+    for (int color = 0; color < 4; ++color)
     {
-        auto neighbors = m_spatial_hash.getNeighbors(m_objects.positions[i].x,m_objects.positions[i].y);
-        for (auto& j : neighbors)
+        auto& hashes = m_spatial_hash.getBucketsOfColor(color);
+        for(auto hash : hashes)
         {
-            if (i != j)
-                handleCollision(i, j);
+            auto& bucket = m_spatial_hash.getBucket(hash);
+            m_pool.enqueue([this, bucket](){handleCollisionsInBucket(bucket);});
         }
+        m_pool.wait();
     }
-
-    // for (int dx = 0; dx <= 1; dx++) {
-    //     for (int dy = 0; dy <= 1; dy++) {
-
-    //         for (float x = dx * m_diameter; x < m_world_size.x; x += m_diameter * 2)
-    //         {
-    //             for (float y = dy * m_diameter; y < m_world_size.y; y += m_diameter * 2)
-    //             {
-    //                 auto bucket = m_spatial_hash.getBucket(x, y);
-    //                 if(!bucket.empty()) 
-    //                     m_pool.enqueue([this, bucket](){handleCollisionsInBucket(bucket);});
-    //             }
-    //         }
-
-    //         m_pool.wait();
-    //     }
-    // }
 }
 
-void Solver::handleCollisionsInBucket(const std::vector<std::size_t> bucket)
+void Solver::handleCollisionsInBucket(const std::vector<std::size_t>& bucket)
 {
+    auto neighbors = m_spatial_hash.getNeighbors(
+        m_objects.positions[bucket.front()].x,
+        m_objects.positions[bucket.front()].y
+    );
     for (auto& i : bucket)
     {
-        auto neighbors = m_spatial_hash.getNeighbors(m_objects.positions[i].x,m_objects.positions[i].y);
-
         for (auto& j : neighbors)
         {
             if (i != j)

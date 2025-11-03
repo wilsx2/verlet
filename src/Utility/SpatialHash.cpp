@@ -1,5 +1,5 @@
 #include "Utility/SpatialHash.hpp"
-
+#include <iostream>
 
 SpatialHash::SpatialHash(float cell_size)
     : m_cell_size(cell_size)
@@ -25,18 +25,19 @@ std::uint64_t SpatialHash::hashPosition(float x, float y)
 
 std::uint64_t SpatialHash::hashPosition(int ix, int iy)
 {
-    return (ix * 82632121) ^ (iy * 42572143);
+    return (ix * 10000) + iy;
 }
 
 int SpatialHash::colorOfPosition(int ix, int iy)
 {
-    return ((ix % 2) << 1) + (iy % 2); // use &?
+    return ((ix & 1) << 1) + (iy & 1);
 }
 
 void SpatialHash::insert(float x, float y, std::size_t value)
 {
     int ix = xToIx(x);
     int iy = yToIy(y);
+    
     std::uint64_t hash = hashPosition(ix,iy);
     int color = colorOfPosition(ix, iy);
     m_buckets[hash].push_back(value);
@@ -47,11 +48,14 @@ std::vector<std::size_t> SpatialHash::getNeighbors(float x, float y)
 {
     std::vector<std::size_t> neighbors;
 
-    for(float dx = -m_cell_size; dx < +m_cell_size; dx += m_cell_size)
+    int ix = xToIx(x);
+    int iy = yToIy(y);
+    
+    for(int dx = -1; dx <= +1; ++dx)
     {
-        for(float dy = -m_cell_size; dy < +m_cell_size; dy += m_cell_size)
+        for(int dy = -1; dy <= +1; ++dy)
         {
-            std::uint32_t hash = hashPosition(x + dx, y + dy);
+            std::uint32_t hash = hashPosition(ix + dx, iy + dy);
             
             auto it = m_buckets.find(hash);
             if (it != m_buckets.end())
@@ -80,4 +84,6 @@ std::vector<std::uint64_t>& SpatialHash::getBucketsOfColor(int color)
 void SpatialHash::clear()
 {
     m_buckets.clear();
+    for(auto& buckets : m_buckets_of_color)
+        buckets.clear();
 }
