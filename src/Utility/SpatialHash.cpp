@@ -15,6 +15,16 @@ int SpatialHash::yToIy(float y)
     return static_cast<int>(y / m_cell_size);
 }
 
+int SpatialHash::xToIx(float x)
+{
+    return static_cast<int>(x / m_cell_size);
+}
+
+int SpatialHash::yToIy(float y)
+{
+    return static_cast<int>(y / m_cell_size);
+}
+
 std::uint64_t SpatialHash::hashPosition(float x, float y)
 {
     return hashPosition(
@@ -31,6 +41,11 @@ std::uint64_t SpatialHash::hashPosition(int ix, int iy)
 int SpatialHash::colorOfPosition(int ix, int iy)
 {
     return ((ix & 1) << 1) + (iy & 1);
+}
+
+int SpatialHash::colorOfPosition(int ix, int iy)
+{
+    return ((ix % 2) << 1) + (iy % 2); // use &?
 }
 
 void SpatialHash::insert(float x, float y, std::size_t value)
